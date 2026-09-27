@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E.B.M FREDERICO JUSER</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#edf3fb;color:#1e293b}
+header{background:#1455a0;color:#fff;text-align:center;padding:20px}
+main{max-width:1100px;margin:22px auto;padding:0 14px}.card{background:#fff;border-radius:12px;padding:20px;margin:14px 0;box-shadow:0 3px 14px #132b4b12}
+h2,h3{color:#1455a0}button{border:0;border-radius:7px;padding:11px 15px;margin:4px;background:#1455a0;color:#fff;font-size:15px;cursor:pointer}
+button:hover{filter:brightness(.94)}.green{background:#198754}.red{background:#c93636}.gray{background:#64748b}.light{background:#e2ecf8;color:#1455a0}
+input,select{width:100%;padding:11px;margin:6px 0 14px;border:1px solid #cbd5e1;border-radius:7px;font-size:15px}
+label{font-weight:bold}.hidden{display:none!important}.login{max-width:500px;margin:25px auto}.menu{display:flex;flex-wrap:wrap;gap:5px}.menu button{flex:1;min-width:120px}
+table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border:1px solid #d6e0ed;padding:9px;text-align:center}th{background:#1455a0;color:#fff}tr:nth-child(even){background:#f4f7fb}
+.note{background:#eaf2ff;padding:12px;border-radius:8px}.badge{display:inline-block;padding:5px 9px;border-radius:6px;font-weight:bold}.ok{background:#d1fae5;color:#166534}.bad{background:#fee2e2;color:#991b1b}.wait{background:#fef3c7;color:#92400e}
+.circle{width:40px;height:40px;border-radius:50%;padding:0;font-weight:bold}.present{background:#0d6efd}.absent{background:#64748b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.stat{font-size:28px;font-weight:bold;color:#1455a0}
+footer{text-align:center;padding:20px;color:#64748b;font-size:13px}
+@media(max-width:600px){.card{padding:14px}th,td{padding:6px;font-size:13px}}
+</style>
+</head>
+<body>
+<header><h1>📚 Portal G3 Escolar</h1><p>Notas, frequência e resultados escolares</p></header>
+<main>
+<section id="home" class="card login">
+<h2 style="text-align:center">Bem-vindo!</h2><p style="text-align:center">Escolha sua área de acesso:</p>
+<button style="width:100%;padding:16px" onclick="show('teacherLogin')">👨‍🏫 Entrar como Professor</button>
+<button class="green" style="width:100%;padding:16px" onclick="show('studentLogin')">🎓 Entrar como Aluno</button>
+</section>
+
+<section id="teacherLogin" class="card login hidden">
+<h2>Login do Professor</h2>
+<form id="teacherForm"><label>Usuário</label><input id="teacherUser" required autocomplete="username" placeholder="Usuário">
+<label>Senha</label><input id="teacherPass" type="password" required placeholder="Senha">
+<button type="submit">Entrar</button><button type="button" class="gray" onclick="goHome()">Voltar</button></form>
+<p id="teacherError" style="color:#c93636"></p>
+</section>
+
+<section id="studentLogin" class="card login hidden">
+<h2>Login do Aluno</h2>
+<form id="studentForm"><label>Usuário do aluno</label><input id="studentUser" required autocomplete="username" placeholder="Usuário fornecido pelo professor">
+<label>Senha</label><input id="studentPass" type="password" required autocomplete="current-password" placeholder="Senha">
+<button type="submit" class="green">Entrar na minha área</button><button type="button" class="gray" onclick="goHome()">Voltar</button></form>
+<p id="studentError" style="color:#c93636"></p>
+</section>
+
+<section id="teacherArea" class="hidden">
+<div class="card"><h2>👨‍🏫 Área do Professor</h2><div class="menu">
+<button onclick="teacherSection('dashboard')">Início</button><button onclick="teacherSection('students')">Alunos</button><button onclick="teacherSection('grades')">Notas</button><button onclick="teacherSection('attendance')">Frequência</button><button onclick="teacherSection('rules')">Regras</button><button onclick="teacherSection('account')">Conta</button><button class="red" onclick="logout()">Sair</button>
+</div></div>
+<div id="dashboard" class="teacherSection card"><h3>Resumo da turma</h3><div class="grid">
+<div class="card"><div>Total de alunos</div><div class="stat" id="countStudents">0</div></div>
+<div class="card"><div>Aprovados</div><div class="stat" id="countApproved">0</div></div>
+<div class="card"><div>Reprovados</div><div class="stat" id="countFailed">0</div></div></div>
+<p class="note">Cadastre alunos e suas credenciais na aba Alunos. Depois, lance notas e frequência.</p></div>
+
+<div id="students" class="teacherSection card hidden">
+<h3>Cadastro de alunos</h3>
+<label>Nome completo</label><input id="newName" placeholder="Nome do aluno">
+<label>Turma</label><input id="newClass" placeholder="Ex.: 7º Ano A">
+<label>Usuário do aluno (único)</label><input id="newStudentUser" placeholder="Ex.: joao.silva">
+<label>Senha do aluno</label><input id="newStudentPass" type="password" placeholder="Crie uma senha">
+<button class="green" onclick="addStudent()">Cadastrar aluno</button>
+<h3>Alunos cadastrados</h3><div id="studentsTable"></div>
+</div>
+
+<div id="grades" class="teacherSection card hidden">
+<h3>Lançar notas</h3>
+<label>Aluno</label><select id="gradeStudent"></select>
+<label>Disciplina</label><input id="subject" placeholder="Ex.: Matemática">
+<label>Trimestre</label><select id="term"><option value="1">1º trimestre</option><option value="2">2º trimestre</option><option value="3">3º trimestre</option></select>
+<label>Nota (0 a 10)</label><input id="gradeValue" type="number" min="0" max="10" step="0.1" placeholder="Ex.: 8,5">
+<button class="green" onclick="saveGrade()">Salvar nota</button>
+<h3>Notas cadastradas</h3><div id="gradesTable"></div>
+</div>
+
+<div id="attendance" class="teacherSection card hidden">
+<h3>Registro de frequência</h3><label>Data</label><input id="attendanceDate" type="date">
+<p class="note">Toque no círculo para alternar: azul = presente; cinza = falta. Clique em “Salvar frequência” para gravar.</p>
+<div id="attendanceList"></div><button class="green" onclick="saveAttendance()">Salvar frequência</button>
+</div>
+
+<div id="rules" class="teacherSection card hidden">
+<h3>Regras escolares</h3><label>Média mínima para aprovação</label><input id="minAverage" type="number" min="0" max="10" step="0.1">
+<label>Limite máximo de faltas</label><input id="maxAbsences" type="number" min="0" step="1">
+<button class="green" onclick="saveRules()">Salvar regras</button>
+<p class="note">O resultado é calculado pela média das notas cadastradas e pelo limite de faltas definido.</p>
+</div>
+
+<div id="account" class="teacherSection card hidden">
+<h3>Alterar acesso do professor</h3><label>Novo usuário</label><input id="changeUser" placeholder="Novo usuário">
+<label>Nova senha</label><input id="changePass" type="password" placeholder="Nova senha (mínimo 4 caracteres)">
+<button class="green" onclick="changeTeacherLogin()">Salvar novo acesso</button>
+</div>
+</section>
+
+<section id="studentArea" class="hidden">
+<div class="card"><h2>🎓 Área do Aluno</h2><p id="studentWelcome"></p><div class="menu">
+<button onclick="studentSection('studentGrades')">Minhas notas</button><button onclick="studentSection('studentResult')">Meu resultado</button><button onclick="studentSection('studentAttendance')">Minha frequência</button><button class="red" onclick="logout()">Sair</button>
+</div></div>
+<div id="studentGrades" class="studentSection card"><h3>Notas por trimestre</h3><div id="studentGradesContent"></div></div>
+<div id="studentResult" class="studentSection card hidden"><h3>Meu resultado</h3><div id="studentResultContent"></div></div>
+<div id="studentAttendance" class="studentSection card hidden"><h3>Minha frequência</h3><div id="studentAttendanceContent"></div></div>
+</section>
+</main>
+<footer>Portal Escolar</footer>
+
+<script>
+const KEY="portalEscolarIndependente_v2";
+let db=JSON.parse(localStorage.getItem(KEY)||"null")||{
+ students:[], grades:[], attendance:{}, rules:{average:6,absences:25},
+ teacher:{user:"professor",pass:"1234"}
+};
+let currentStudent=null;
+let tempAttendance={};
+
+function persist(){localStorage.setItem(KEY,JSON.stringify(db));}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function show(id){["home","teacherLogin","studentLogin","teacherArea","studentArea"].forEach(x=>document.getElementById(x).classList.add("hidden"));document.getElementById(id).classList.remove("hidden");}
+function goHome(){show("home");}
+function logout(){currentStudent=null;document.getElementById("teacherPass").value="";document.getElementById("studentPass").value="";goHome();}
+document.getElementById("teacherForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ if(document.getElementById("teacherUser").value.trim()===db.teacher.user && document.getElementById("teacherPass").value===db.teacher.pass){
+  show("teacherArea");refreshAll();teacherSection("dashboard");
+ }else document.getElementById("teacherError").textContent="Usuário ou senha incorretos.";
+});
+document.getElementById("studentForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const u=document.getElementById("studentUser").value.trim();
+ const p=document.getElementById("studentPass").value;
+ currentStudent=db.students.find(s=>s.user===u&&s.pass===p);
+ if(!currentStudent){document.getElementById("studentError").textContent="Usuário ou senha incorretos.";return;}
+ show("studentArea");document.getElementById("studentWelcome").textContent="Olá, "+currentStudent.name+" • Turma: "+currentStudent.className;
+ studentRefresh();studentSection("studentGrades");
+});
+function teacherSection(id){document.querySelectorAll(".teacherSection").forEach(e=>e.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");if(id==="students")renderStudents();if(id==="grades"){fillGradeStudents();renderGrades();}if(id==="attendance")loadAttendance();if(id==="rules")loadRules();if(id==="dashboard")renderDashboard();}
+function studentSection(id){document.querySelectorAll(".studentSection").forEach(e=>e.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");studentRefresh();}
+function addStudent(){
+ const name=document.getElementById("newName").value.trim(),className=document.getElementById("newClass").value.trim(),user=document.getElementById("newStudentUser").value.trim(),pass=document.getElementById("newStudentPass").value;
+ if(!name||!className||!user||!pass){alert("Preencha todos os campos.");return;}
+ if(pass.length<4){alert("A senha do aluno deve ter pelo menos 4 caracteres.");return;}
+ if(db.students.some(s=>s.user.toLowerCase()===user.toLowerCase())){alert("Esse usuário já está cadastrado.");return;}
+ db.students.push({id:cryptoId(),name,className,user,pass});
+ persist();["newName","newClass","newStudentUser","newStudentPass"].forEach(id=>document.getElementById(id).value="");
+ refreshAll();alert("Aluno cadastrado!");
+}
+function cryptoId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+function deleteStudent(id){
+ const s=db.students.find(x=>x.id===id);if(!s||!confirm("Excluir "+s.name+" e todos os seus registros?"))return;
+ db.students=db.students.filter(x=>x.id!==id);db.grades=db.grades.filter(x=>x.studentId!==id);
+ Object.keys(db.attendance).forEach(d=>delete db.attendance[d][id]);
+ persist();refreshAll();
+}
+function renderStudents(){
+ const box=document.getElementById("studentsTable");
+ if(!db.students.length){box.innerHTML="<p>Nenhum aluno cadastrado.</p>";return;}
+ box.innerHTML="<table><tr><th>Aluno</th><th>Turma</th><th>Usuário</th><th>Ação</th></tr>"+db.students.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.className)}</td><td>${esc(s.user)}</td><td><button class="red" onclick="deleteStudent('${s.id}')">Excluir</button></td></tr>`).join("")+"</table>";
+}
+function fillGradeStudents(){
+ const sel=document.getElementById("gradeStudent"),old=sel.value;sel.innerHTML="";
+ db.students.forEach(s=>{let o=document.createElement("option");o.value=s.id;o.textContent=s.name+" — "+s.className;sel.appendChild(o);});
+ if(db.students.some(s=>s.id===old))sel.value=old;
+}
+function saveGrade(){
+ const studentId=document.getElementById("gradeStudent").value,subject=document.getElementById("subject").value.trim(),term=Number(document.getElementById("term").value),raw=document.getElementById("gradeValue").value,value=Number(raw);
+ if(!studentId){alert("Cadastre um aluno primeiro.");return;}
+ if(!subject){alert("Digite a disciplina.");return;}
+ if(raw===""||!Number.isFinite(value)||value<0||value>10){alert("Informe uma nota entre 0 e 10.");return;}
+ const found=db.grades.find(g=>g.studentId===studentId&&g.subject.toLowerCase()===subject.toLowerCase()&&g.term===term);
+ if(found)found.value=value;else db.grades.push({id:cryptoId(),studentId,subject,term,value});
+ persist();document.getElementById("gradeValue").value="";renderGrades();renderDashboard();alert("Nota salva!");
+}
+function removeGrade(id){if(!confirm("Excluir esta nota?"))return;db.grades=db.grades.filter(g=>g.id!==id);persist();renderGrades();renderDashboard();}
+function renderGrades(){
+ const box=document.getElementById("gradesTable"),sid=document.getElementById("gradeStudent").value;
+ const rows=db.grades.filter(g=>g.studentId===sid);
+ if(!sid){box.innerHTML="<p>Cadastre um aluno primeiro.</p>";return;}
+ if(!rows.length){box.innerHTML="<p>Nenhuma nota cadastrada.</p>";return;}
+ box.innerHTML="<table><tr><th>Disciplina</th><th>Trimestre</th><th>Nota</th><th>Ação</th></tr>"+rows.map(g=>`<tr><td>${esc(g.subject)}</td><td>${g.term}º</td><td>${g.value.toFixed(1)}</td><td><button class="red" onclick="removeGrade('${g.id}')">Excluir</button></td></tr>`).join("")+"</table>";
+}
+function loadAttendance(){
+ const inp=document.getElementById("attendanceDate");if(!inp.value){const d=new Date();inp.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+ renderAttendance();
+}
+document.getElementById("attendanceDate").addEventListener("change",renderAttendance);
+function renderAttendance(){
+ const date=document.getElementById("attendanceDate").value,box=document.getElementById("attendanceList");if(!date){box.innerHTML="";return;}
+ if(!db.students.length){box.innerHTML="<p>Nenhum aluno cadastrado.</p>";return;}
+ const saved=db.attendance[date]||{};tempAttendance={};
+ db.students.forEach(s=>tempAttendance[s.id]=saved[s.id]===undefined?true:saved[s.id]);
+ box.innerHTML="<table><tr><th>Aluno</th><th>Presença/Falta</th></tr>"+db.students.map(s=>`<tr><td>${esc(s.name)}</td><td><button id="att_${s.id}" class="circle ${tempAttendance[s.id]?"present":"absent"}" onclick="toggleAttendance('${s.id}')">${tempAttendance[s.id]?"✓":"✕"}</button> <span id="attText_${s.id}">${tempAttendance[s.id]?"Presente":"Falta"}</span></td></tr>`).join("")+"</table>";
+}
+function toggleAttendance(id){tempAttendance[id]=!tempAttendance[id];const yes=tempAttendance[id],b=document.getElementById("att_"+id);b.className="circle "+(yes?"present":"absent");b.textContent=yes?"✓":"✕";document.getElementById("attText_"+id).textContent=yes?"Presente":"Falta";}
+function saveAttendance(){
+ const date=document.getElementById("attendanceDate").value;if(!date){alert("Escolha uma data.");return;}
+ db.attendance[date]={...tempAttendance};persist();renderDashboard();alert("Frequência salva!");
+}
+function loadRules(){document.getElementById("minAverage").value=db.rules.average;document.getElementById("maxAbsences").value=db.rules.absences;}
+function saveRules(){
+ const average=Number(document.getElementById("minAverage").value),absences=Number(document.getElementById("maxAbsences").value);
+ if(!Number.isFinite(average)||average<0||average>10){alert("A média deve ficar entre 0 e 10.");return;}
+ if(!Number.isInteger(absences)||absences<0){alert("Informe um limite de faltas válido.");return;}
+ db.rules={average,absences};persist();renderDashboard();alert("Regras salvas.");
+}
+function changeTeacherLogin(){
+ const user=document.getElementById("changeUser").value.trim(),pass=document.getElementById("changePass").value;
+ if(!user||pass.length<4){alert("Informe usuário e senha com pelo menos 4 caracteres.");return;}
+ db.teacher={user,pass};persist();document.getElementById("changeUser").value="";document.getElementById("changePass").value="";alert("Acesso do professor alterado.");
+}
+function avg(studentId){const a=db.grades.filter(g=>g.studentId===studentId);return a.length?a.reduce((s,g)=>s+g.value,0)/a.length:null;}
+function absences(studentId){let n=0;Object.values(db.attendance).forEach(r=>{if(r[studentId]===false)n++;});return n;}
+function result(studentId){
+ const m=avg(studentId),f=absences(studentId);
+ if(m===null)return {text:"Sem notas",cls:"wait"};
+ if(m>=db.rules.average&&f<=db.rules.absences)return {text:"Aprovado",cls:"ok"};
+ return {text:"Reprovado",cls:"bad"};
+}
+function renderDashboard(){
+ document.getElementById("countStudents").textContent=db.students.length;
+ let a=0,r=0;db.students.forEach(s=>{const x=result(s.id);if(x.text==="Aprovado")a++;if(x.text==="Reprovado")r++;});
+ document.getElementById("countApproved").textContent=a;document.getElementById("countFailed").textContent=r;
+}
+function studentRefresh(){
+ if(!currentStudent)return;
+ const sid=currentStudent.id,gs=db.grades.filter(g=>g.studentId===sid);
+ if(!gs.length)document.getElementById("studentGradesContent").innerHTML="<p>Nenhuma nota lançada ainda.</p>";
+ else{
+  const subjects=[...new Set(gs.map(g=>g.subject))];
+  document.getElementById("studentGradesContent").innerHTML="<table><tr><th>Disciplina</th><th>1º trimestre</th><th>2º trimestre</th><th>3º trimestre</th></tr>"+subjects.map(sub=>{const v=[1,2,3].map(t=>gs.find(g=>g.subject===sub&&g.term===t));return `<tr><td>${esc(sub)}</td>${v.map(x=>`<td>${x?x.value.toFixed(1):"—"}</td>`).join("")}</tr>`;}).join("")+"</table>";
+ }
+ const m=avg(sid),f=absences(sid),r=result(sid);
+ document.getElementById("studentResultContent").innerHTML=`<div class="note"><p><b>Aluno:</b> ${esc(currentStudent.name)}</p><p><b>Turma:</b> ${esc(currentStudent.className)}</p><p><b>Média geral:</b> ${m===null?"Sem notas":m.toFixed(2)}</p><p><b>Média mínima:</b> ${db.rules.average.toFixed(1)}</p><p><b>Total de faltas:</b> ${f}</p><p><b>Limite de faltas:</b> ${db.rules.absences}</p><p><b>Resultado:</b> <span class="badge ${r.cls}">${r.text}</span></p></div>`;
+ let rows=[],pres=0,total=0;
+ Object.keys(db.attendance).sort().forEach(date=>{const v=db.attendance[date][sid];if(v!==undefined){total++;if(v)pres++;rows.push(`<tr><td>${date.split("-").reverse().join("/")}</td><td><span class="badge ${v?"ok":"bad"}">${v?"Presente":"Falta"}</span></td></tr>`);}});
+ document.getElementById("studentAttendanceContent").innerHTML=`<div class="note"><p><b>Aulas registradas:</b> ${total}</p><p><b>Presenças:</b> ${pres}</p><p><b>Faltas:</b> ${f}</p></div>`+(rows.length?`<table><tr><th>Data</th><th>Situação</th></tr>${rows.join("")}</table>`:"<p>Nenhuma frequência registrada.</p>");
+}
+function refreshAll(){renderDashboard();renderStudents();fillGradeStudents();renderGrades();loadRules();renderAttendance();}
+persist();</script>
+</body>
+</html>
